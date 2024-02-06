@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace WordService.Controllers
 {
@@ -9,15 +10,15 @@ namespace WordService.Controllers
         private Database database = Database.GetInstance();
 
         [HttpDelete]
-        public void Delete()
+        public async Task DeleteAsync()
         {
-            database.DeleteDatabase();
+            await database.DeleteDatabaseAsync();
         }
 
         [HttpPost]
-        public void Post()
+        public async Task PostAsync()
         {
-            database.RecreateDatabase();
+            await database.RecreateDatabaseAsync();
         }
     }
 }

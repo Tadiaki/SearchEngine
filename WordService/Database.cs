@@ -18,14 +18,14 @@ namespace WordService
 
         private Coordinator coordinator = new Coordinator();
 
-        private async Task ExecuteAsync(IDbConnection connection, string sql)
+        private async Task ExecuteAsync(DbConnection connection, string sql)
         {
-            using var trans = connection.BeginTransaction();
+            await using var trans = connection.BeginTransaction();
             var cmd = connection.CreateCommand();
             cmd.Transaction = trans;
             cmd.CommandText = sql;
             await cmd.ExecuteNonQueryAsync();
-            trans.Commit();
+            await trans.CommitAsync();
         }
 
         public async Task DeleteDatabaseAsync()

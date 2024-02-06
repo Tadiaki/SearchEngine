@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Indexer
 {
     public class App
     {
-        public void Run()
+        public async Task RunAsync()
         {
             var api = new HttpClient()
             {
@@ -26,7 +27,7 @@ namespace Indexer
             DateTime start = DateTime.Now;
             foreach (var directory in directories)
             {
-                crawler.IndexFilesIn(directory, new List<string> { ".txt" });
+                await crawler.IndexFilesInAsync(directory, new List<string> { ".txt" });
             }
 
             TimeSpan used = DateTime.Now - start;

@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace ConsoleSearch
 {
     public class App
     {
-        public void Run()
+        private readonly SearchLogic mSearchLogic = new SearchLogic();
+
+        public async Task RunAsync()
         {
-            SearchLogic mSearchLogic = new SearchLogic();
             Console.WriteLine("Console Search");
-            
+
             while (true)
             {
-                Console.WriteLine("enter search terms - q for quit [default: hello]");
-                string input = Console.ReadLine() ?? "hello"; // Search for hello by default
-                if (input.Equals("q")) break;
+                Console.WriteLine("Enter search terms - q for quit [default: hello]");
+                string input = Console.ReadLine() ?? "hello";
+                if (input.Equals("q", StringComparison.OrdinalIgnoreCase)) break;
 
                 var wordIds = new List<int>();
                 var searchTerms = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
@@ -35,26 +36,27 @@ namespace ConsoleSearch
 
                 DateTime start = DateTime.Now;
 
-                var docIds = mSearchLogic.GetDocuments(wordIds);
+                var docIdsTask = mSearchLogic.GetDocumentsAsync(wordIds);
+                var retrievedDocIds = await docIdsTask;
 
-                // get details for the first 10             
-                var top10 = new List<int>();
-                foreach (var p in docIds.Take(10))
-                {
-                    top10.Add(p.Key);
-                }
+                // get details for the first 10
+                var top10 = retrievedDocIds.Take(10);
 
                 TimeSpan used = DateTime.Now - start;
 
                 int idx = 0;
-                foreach (var doc in mSearchLogic.GetDocumentDetails(top10))
+                foreach (var docIdCountPair in top10)
                 {
-                    Console.WriteLine("" + (idx+1) + ": " + doc + " -- contains " + docIds[docIds.Keys.ToArray()[idx]] + " search terms");
+                    var docId = docIdCountPair.Key;
+                    var count = docIdCountPair.Value;
+
+                    var docDetails = await mSearchLogic.GetDocumentDetailsAsync(new List<int> { docId });
+                    Console.WriteLine($"{idx + 1}: {docDetails[0]} -- contains {count} search terms");
                     idx++;
                 }
-                Console.WriteLine("Documents: " + docIds.Count + ". Time: " + used.TotalMilliseconds);
-                
-                Thread.Sleep(1000);
+                Console.WriteLine($"Documents: {retrievedDocIds.Count}. Time: {used.TotalMilliseconds} ms");
+
+                await Task.Delay(1000);
             }
         }
     }
